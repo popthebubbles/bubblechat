@@ -109,6 +109,9 @@ int shell(int* pipefd, pid_t pID)
 		
 		printf(">> ");
 		
+		/* Fork() to handle input and constantly place "nothing"
+		   on the pipe so that the server (child that read()'s)
+		   isn't waiting.                                     */
 		if(!fork()) {
 			writePipe(pipefd, nothing);
 			exit(0);
