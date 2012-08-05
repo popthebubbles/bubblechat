@@ -66,13 +66,12 @@ int forkLoop(int lsock, struct sockaddr *client_addr, int* pipefd)
 	
 	while(pval) {
 		readPipe(pipefd); // Check to see if any commands came in from the shell
-		printf("Child received %d\n", pval);
 		switch(pval) {
-			case 0:
+			case stop:
 				return 0;
-			case 1:
+			case restart:
 				return 0;
-			case 2:
+			case nothing:
 				break;
 			default: 
 				return -1;
@@ -101,25 +100,21 @@ int forkLoop(int lsock, struct sockaddr *client_addr, int* pipefd)
 	return 0;
 }
 
-void flush_input()
-{
-	int ch;
-	while ((ch = getchar()) != '\n' && ch != EOF);
-}
-
 // Shell()- returns 0 on success, 1 on program error, 2 on input error
 int shell(int* pipefd, pid_t pID)
 {
 	char input[100];
 	
 	while(pval>1) {
+		
 		printf(">> ");
 		scanf("%s", input);
 		
 		if(!strcmp(input, "stop"))
 			pval=stop;
+		/* For now, don't bother with restart functionality
 		else if(!strcmp(input, "restart"))
-			pval=restart;
+			pval=restart; */
 		else
 			pval=nothing;
 			
@@ -127,8 +122,6 @@ int shell(int* pipefd, pid_t pID)
 		
 		if(kill(pID, 0)<0)
 			break;
-			
-		flush_input();
 	}
 	
 	printf("Parent exiting...\n");
@@ -193,10 +186,12 @@ int main(int argc, char* argv[])
 	if(!check(forkLoop(sockfd, (struct sockaddr *)&client_addr, pipefd), "forkLoop()"))
 		return 1;
 	
+	/* For now, don't bother with restart functionality
+	
 	if(pval==restart) {
 		printf("Restarting...\n");
 		system("sleep 1 && ./bubbleserver 23416");
-	}
+	} */
 	
 	if(!pID)
 		printf("Child exiting...\n");
