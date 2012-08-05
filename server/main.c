@@ -42,6 +42,8 @@ int main(int argc, char* argv[])
 	}
 	pval=nothing;
 	system("clear");
+	
+	printf("Bubblechat server running on port %s\n", argv[1]);
 
 	if((res=setupStruct(&hints, argv[1], res))==NULL)
 		return 1;
