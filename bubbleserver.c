@@ -108,6 +108,12 @@ int shell(int* pipefd, pid_t pID)
 	while(pval>1) {
 		
 		printf(">> ");
+		
+		if(!fork()) {
+			writePipe(pipefd, nothing);
+			exit(0);
+		}
+		else
 		scanf("%s", input);
 		
 		if(!strcmp(input, "stop"))
