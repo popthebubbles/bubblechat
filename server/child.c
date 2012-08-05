@@ -1,4 +1,15 @@
-#include "bubble.h"
+#include "bubbleserver.h"
+
+// Used in process handling
+void sigchld_handler(int s) {
+	while(waitpid(-1, NULL, WNOHANG) > 0);
+}
+
+// Returns pipeval sent by shell
+void readPipe(int* pfd) // For the server to receive commands from shell
+{	
+	read(pfd[0], &pval, sizeof pval);
+}
 
 // Returns pointer to struct filled out by getaddrinfo(), NULL on error
 struct addrinfo* setupStruct(struct addrinfo* input, const char* port, struct addrinfo* results)
@@ -68,7 +79,7 @@ int forkLoop(int lsock, struct sockaddr *client_addr, int* pipefd)
 		readPipe(pipefd); // Check to see if any commands came in from the shell
 		switch(pval) {
 			case stop:
-				return 0;
+				exit(0);
 			case restart:
 				return 0;
 			case nothing:
@@ -99,3 +110,4 @@ int forkLoop(int lsock, struct sockaddr *client_addr, int* pipefd)
 	}
 	return 0;
 }
+

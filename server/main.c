@@ -1,4 +1,29 @@
-#include "bubble.h"
+#include "bubbleserver.h"
+
+int reap() {
+	struct sigaction sa;
+
+	sa.sa_handler = sigchld_handler; // reap all dead processes
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = SA_RESTART;
+	if (!check(sigaction(SIGCHLD, &sa, NULL), "sigaction"))
+		return 0;
+	
+	return 1;
+}
+
+/* IMPORTANT: Returns 1 ON SUCCESS */
+int check(int i, const char* msg)
+{
+	printf("Checking %s...", msg);
+	if(i==-1) {
+		perror(msg);
+		return 0;
+	}
+	
+	printf("No error.\n");
+	return 1;
+}
 
 // Returns 0 on success, 1 on program error, 2 on input error
 int main(int argc, char* argv[])
@@ -9,9 +34,7 @@ int main(int argc, char* argv[])
 	
 	struct sockaddr_storage client_addr;
 	struct addrinfo hints;
-	struct addrinfo *res;
-	
-	socklen_t addrsize=sizeof client_addr;
+	struct addrinfo *res=NULL;
 	
 	if(argc!=2) {
 		fprintf(stderr, "Usage: bubbleserver <port>\n");

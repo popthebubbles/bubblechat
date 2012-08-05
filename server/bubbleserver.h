@@ -1,5 +1,5 @@
-#ifndef __bubble_h___
-	#define __bubble_h__
+#ifndef bubbleserver_h
+#define bubbleserver_h
 
 #include <stdio.h>
 #include <sys/socket.h>
@@ -26,44 +26,21 @@
 enum pipeval {
 	stop, restart, nothing
 	} pval;
-
-/* IMPORTANT: Returns 1 ON SUCCESS */
-int check(int i, const char* msg)
-{
-	printf("Checking %s...", msg);
-	if(i==-1) {
-		perror(msg);
-		return 0;
-	}
 	
-	printf("No error.\n");
-	return 1;
-}
+void sigchld_handler(int s);
+void writePipe(int* pfd, int cmdOut);
+void readPipe(int* pfd);
 
-// Returns pipeval sent by shell
-int readPipe(int* pfd) // For the server to receive commands from shell
-{	
-	read(pfd[0], &pval, sizeof pval);
-}
+void* get_addr(struct sockaddr* addr);
 
-void writePipe(int* pfd, int cmdOut) // For the shell to send commands to the server
-{
-	write(pfd[1], &cmdOut, sizeof cmdOut);
-}
+int reap();
+int check(int i, const char* msg);
+int loopStructs(struct addrinfo *results, int* s);
+int forkLoop(int lsock, struct sockaddr *client_addr, int* pipefd);
+int shell(int* pipefd, pid_t pID);
 
-// Used in process handling
-void sigchld_handler(int s) {
-	while(waitpid(-1, NULL, WNOHANG) > 0);
-}
+struct addrinfo* setupStruct(struct addrinfo* input, const char* port, struct addrinfo* results);
 
-int reap() {
-	struct sigaction sa;
-
-	sa.sa_handler = sigchld_handler; // reap all dead processes
-	sigemptyset(&sa.sa_mask);
-	sa.sa_flags = SA_RESTART;
-	if (!check(sigaction(SIGCHLD, &sa, NULL), "sigaction"))
-		return 0;
-}
+	
 #endif
 
