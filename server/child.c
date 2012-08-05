@@ -81,7 +81,7 @@ int forkLoop(int lsock, struct sockaddr *client_addr, int* pipefd)
 			case stop:
 				exit(0);
 			case restart:
-				return 0;
+				exit(0);
 			case nothing:
 				break;
 			default: 
